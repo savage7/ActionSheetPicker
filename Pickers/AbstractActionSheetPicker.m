@@ -27,6 +27,7 @@
 
 #import "AbstractActionSheetPicker.h"
 #import <objc/message.h>
+#import "UIDevice+SystemVersion.h"
 
 @interface AbstractActionSheetPicker()
 
@@ -128,10 +129,20 @@
 #pragma mark - Actions
 
 - (void)showActionSheetPicker {
-    UIView *masterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.viewSize.width, 260)];    
+    UIView *masterView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.viewSize.width, 260)];
     UIToolbar *pickerToolbar = [self createPickerToolbarWithTitle:self.title];
-    [pickerToolbar setBarStyle:UIBarStyleBlackTranslucent];
     [masterView addSubview:pickerToolbar];
+
+    if([[UIDevice currentDevice] systemMajorVersion] < 7){
+        [pickerToolbar setBarStyle:UIBarStyleBlackTranslucent];
+        // toolbar is BlackTranslucent, make it black to look nicer
+        masterView.backgroundColor = [UIColor blackColor];
+    } else {
+        [pickerToolbar setBarStyle:UIBarStyleDefault];
+        // toolbar for ios7 is white, without color it would be grey
+        masterView.backgroundColor = [UIColor whiteColor];
+    }
+    
     self.pickerView = [self configuredPickerView];
     NSAssert(_pickerView != NULL, @"Picker view failed to instantiate, perhaps you have invalid component data.");
     [masterView addSubview:_pickerView];
@@ -225,9 +236,15 @@
 
 - (UIBarButtonItem *)createToolbarLabelWithTitle:(NSString *)aTitle {
     UILabel *toolBarItemlabel = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, 180,30)];
-    [toolBarItemlabel setTextAlignment:UITextAlignmentCenter];    
-    [toolBarItemlabel setTextColor:[UIColor whiteColor]];    
-    [toolBarItemlabel setFont:[UIFont boldSystemFontOfSize:16]];    
+    [toolBarItemlabel setTextAlignment:UITextAlignmentCenter];
+    if([[UIDevice currentDevice] systemMajorVersion] < 7){
+        // toolbar is black
+        [toolBarItemlabel setTextColor:[UIColor whiteColor]];
+    } else {
+        // toolbar is white
+        [toolBarItemlabel setTextColor:[UIColor blackColor]];
+    }
+    [toolBarItemlabel setFont:[UIFont boldSystemFontOfSize:16]];
     [toolBarItemlabel setBackgroundColor:[UIColor clearColor]];    
     toolBarItemlabel.text = aTitle;    
     UIBarButtonItem *buttonLabel = [[UIBarButtonItem alloc]initWithCustomView:toolBarItemlabel];
